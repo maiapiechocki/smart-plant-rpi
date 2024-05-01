@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart-Plant-Site</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #bbcbc3;
+      position: relative;
+    }
+    h1 {
+      color: #237449;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h2 {
+      color: #37b873;
+      margin-bottom: 10px;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .button-group {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .button-group a {
+      display: inline-block;
+      margin: 5px;
+      padding: 10px 20px;
+      background-color: #8cc8a8;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    .button-group a:hover {
+      background-color: #37b873;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Smart Plant Home</h1>
+    <h2>The date and time on the server is: {{ time }}</h2>
+    <h2> {{ text }} </h2>
+    <br>
+    <div class="button-group">
+      <a href="/auto/water/ON"><button>Turn ON Auto Watering</button></a>
+      <a href="/auto/water/OFF"><button>Turn OFF Auto Watering</button></a>
+      <a href="/sensor"><button>Check Soil Status</button></a>
+      <br>
+      <a href="/water"><button>Water Once</button></a>
+      <a href="/last_watered"><button>Check Time Last Watered</button></a>
+      
+    </div>
+  </div>
+  
+</body>

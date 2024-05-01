@@ -1,10 +1,12 @@
-# External module imp
-import RPi.GPIO as GPIO  # Import the RPi.GPIO module for controlling GPIO pins
-import datetime  # Import the datetime module for working with dates and times
-import time  # Import the time module for adding delays
+import RPi.GPIO as GPIO
+import datetime 
+import time
 
-init = False  # Initialize a variable to track initialization status
-GPIO.setmode(GPIO.BOARD)  # Set the pin numbering scheme to BOARD
+init = False 
+GPIO.setmode(GPIO.BOARD) 
+
+pump_pin = 15
+sensor_pin = 8
 
 # Function to get the last watered time from a file
 def get_last_watered():
@@ -15,41 +17,71 @@ def get_last_watered():
         return "NEVER!"  # If the file doesn't exist or an error occurs, return "NEVER!"
 
 # Function to get the status of a sensor connected to a specific pin
-def get_status(pin=8):
-    GPIO.setup(pin, GPIO.IN)  # Set the specified pin as an input
-    return GPIO.input(pin)  # Read and return the value of the specified pin
+def get_status(): 
+      # Set the specified pin as an input 
+    return GPIO.input(sensor_pin)  # Read and return the value of the specified pin
 
 # Function to initialize an output pin
-def init_output(pin):
-    GPIO.setup(pin, GPIO.OUT)  # Set the specified pin as an output
-    GPIO.output(pin, GPIO.LOW)  # Set the specified pin to LOW
-    GPIO.output(pin, GPIO.HIGH)  # Set the specified pin to HIGH
+GPIO.setup(sensor_pin, GPIO.IN)
+GPIO.setup(pump_pin, GPIO.OUT)  # Set the pin as an output
+GPIO.output(pump_pin, GPIO.LOW)
 
 # Function to automatically water the plant based on sensor readings
-def auto_water(delay=5, pump_pin=7, water_sensor_pin=8):
-    consecutive_water_count = 0  # Initialize a counter for consecutive water readings
-    init_output(pump_pin)  # Initialize the pump pin as an output
-    print("Here we go! Press CTRL+C to exit")  # Print a message to indicate the start of the loop
-    try:
-        while 1 and consecutive_water_count < 10:  # Loop indefinitely until the consecutive water count reaches 10
-            time.sleep(delay)  # Wait for the specified delay
-            wet = get_status(pin=water_sensor_pin) == 0  # Check if the water sensor pin is wet (returns 0 when wet)
-            if not wet:  # If the sensor is not wet
-                if consecutive_water_count < 5:  # If the consecutive water count is less than 5
-                    pump_on(pump_pin, 1)  # Turn on the pump for 1 second
-                    consecutive_water_count += 1  # Increment the consecutive water count
-            else:
-                consecutive_water_count = 0  # Reset the consecutive water count if the sensor is wet
-    except KeyboardInterrupt:
-        # If CTRL+C is pressed, exit cleanly:
-        GPIO.cleanup()  # Clean up all GPIO pins
+def auto_water(delay=0, stop_flag=None):
+    print("Auto-watering started. Press CTRL+C to exit.")
+    while not stop_flag.is_set():
+        wet = get_status() == 0
+        if not wet:
+            pump_on(duration=10)  
+            time.sleep(delay)
+        else:
+            print("Sensor is wet, waiting for it to dry...") #delay to chk if sensor wet
+            time.sleep(delay)
+    print("Auto-watering stopped.")
 
 # Function to turn on the pump for a specified duration
-def pump_on(pump_pin=7, delay=1):
-    init_output(pump_pin)  # Initialize the pump pin as an output
+def pump_on(duration=1):
     f = open("last_watered.txt", "w")  # Open the last_watered.txt file in write mode
     f.write("Last watered {}".format(datetime.datetime.now()))  # Write the current date and time to the file
     f.close()  # Close the file
-    GPIO.output(pump_pin, GPIO.LOW)  # Turn on the pump by setting the pin to LOW
-    time.sleep(1)  # Wait for the specified delay (default is 1 second)
-    GPIO.output(pump_pin, GPIO.HIGH)  # Turn off the pump by setting the pin to HIGH
+    GPIO.output(pump_pin, GPIO.HIGH)  # Turn on the pump by setting the pin to LOW
+    time.sleep(duration)  # Wait for the specified delay (default is 1 second)
+    GPIO.output(pump_pin, GPIO.LOW)  # Turn off the pump by setting the pin to HIGH
+
+def pump_off():
+    print("turning off here with pin ", pump_pin)
+    GPIO.output(pump_pin, GPIO.LOW)
+	#GPIO.cleanup()
+    
+	#GPIO.setmode(GPIO.BOARD) 
+ 
+
+def init_pins():
+    GPIO.setup(sensor_pin, GPIO.IN)
+    GPIO.setup(pump_pin, GPIO.OUT)  # Set the pin as an output
+    GPIO.output(pump_pin, GPIO.LOW)
+
+# Main function
+# try:
+#    while True:
+#        print("Select an option:")
+#        print("1. Auto Watering")
+#        print("2. Manual Watering")
+#        print("3. Exit")
+#        choice = input("Enter your choice: ")
+        
+#        if choice == 1:
+#            auto_water()
+#        elif choice == 2:
+#            pump_on()
+#            print("Manual watering started.")
+#            time.sleep(1)  # Ensuring the pump runs for at least 1 second
+#            pump_off()
+#            print("Manual watering stopped.")
+#        elif choice == 3:
+#            break
+#        else:
+#            print("Invalid choice. Please enter a valid option.")
+# except KeyboardInterrupt:
+#    GPIO.cleanup()
+
